@@ -444,6 +444,7 @@ func marshalExpression(exp expr.Any) ([]byte, error) {
 		b = append(b, '}')
 		return b, nil
 	}
+
 	/*
 		TODO: (sbezverk)
 			expr.Masq:
@@ -454,5 +455,5 @@ func marshalExpression(exp expr.Any) ([]byte, error) {
 			expr.Rt:
 	*/
 
-	return nil, fmt.Errorf("unknown expression type %T", exp)
+	return json.Marshal(exp)
 }

@@ -86,7 +86,7 @@ func processPortList(l4proto uint8, offset uint32, port []*uint16, op Operator) 
 	if len(port) > 1 {
 		nfset = &nfSet{}
 		set = &nftables.Set{}
-		set.Anonymous = false
+		set.Anonymous = true
 		set.Constant = true
 		set.Name = getSetName()
 		set.ID = uint32(rand.Intn(0xffff))

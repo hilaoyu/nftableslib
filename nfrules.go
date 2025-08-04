@@ -49,6 +49,7 @@ type RuleFuncs interface {
 	Sync() error
 	UpdateRulesHandle() error
 	GetRuleHandle(id uint32) (uint64, error)
+	Exist(handleId uint64) bool
 	GetRulesUserData() (map[uint64][]byte, error)
 }
 
@@ -434,6 +435,20 @@ func (nfr *nfRules) Sync() error {
 		if len(sets) != 0 {
 			rr.sets = sets
 		}
+		if rule.UserData != nil {
+			// Rule ID TLV is stored in last 4 bytes of User data
+
+			// Rule ID TLV 4 bytes:
+			//      [0] - TLV type , must be 0x2
+			//      [1] - Value length, must be 2
+			//      [2:] - 2 bytes carrying Rule ID
+			if rule.UserData[len(rule.UserData)-4] == 0x2 && rule.UserData[len(rule.UserData)-3] == 0x2 {
+				n := make([]byte, 4)
+				// Copy last 2 bytes of user data which carry rule id
+				copy(n[2:], rule.UserData[len(rule.UserData)-2:])
+				rr.id = binaryutil.BigEndian.Uint32(n)
+			}
+		}
 		nfr.addRule(rr)
 	}
 
@@ -520,6 +535,16 @@ func (nfr *nfRules) GetRuleHandle(id uint32) (uint64, error) {
 	}
 
 	return 0, fmt.Errorf("rule with id %d is not found", id)
+}
+func (nfr *nfRules) Exist(handleId uint64) bool {
+	_ = nfr.Sync()
+	for _, r := range nfr.dumpRules() {
+		if r.rule.Handle == handleId {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (nfr *nfRules) GetRulesUserData() (map[uint64][]byte, error) {

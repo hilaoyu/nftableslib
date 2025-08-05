@@ -68,7 +68,7 @@ func processAddrList(l3proto nftables.TableFamily, offset uint32, list []*IPAddr
 	}
 	nfset := &nfSet{}
 	set := &nftables.Set{
-		Anonymous: false,
+		Anonymous: true,
 		Constant:  true,
 		Name:      getSetName(),
 		ID:        uint32(rand.Intn(0xffff)),
